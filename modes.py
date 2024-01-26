@@ -56,7 +56,7 @@ def mode_one(): # Function one to reserve room. Need to implement calendar/more 
     name=input("\nEnter your name: ")
     hour=(time.localtime()).tm_hour
     day=(time.localtime())[2]
-    
+    minute = (time.localtime()).tm_min # used for testing end time
     day_user=int(input(f"\nEnter the day of the reservation ({day}-31): "))
     #only for current day for now (easy testing)
     if day_user==day:
@@ -72,11 +72,13 @@ def mode_one(): # Function one to reserve room. Need to implement calendar/more 
     print("\n")
 
 
-    while True:
-         
+    while hour<end_time:
+        hour=(time.localtime()).tm_hour
+    #while minute < 2: used for testing end time
+        #minute = (time.localtime()).tm_min # used for testing end time
         time.sleep(0.05) # to avoid permanent loop, was causing issues with the keyboard.is_pressed method
-        try:
-            if (hour>=start_time and hour<end_time and day_user==day): # check time compared to reservation
+        #try:
+        if (hour>=start_time and day_user==day): # check time compared to reservation
                 
                     
                 print(f"\nWaiting for 'someone' to show up...")
@@ -85,9 +87,10 @@ def mode_one(): # Function one to reserve room. Need to implement calendar/more 
       
                 while keyboard.is_pressed('y')==False:
                     pass
-                all_time_in=[] 
-                all_time_out = []
-                all_time_in.append(time.strftime("%H:%M:%S", time.localtime()))               
+                #all_time_in=[] 
+                #all_time_out = []
+                #all_time_in.append(time.strftime("%H:%M:%S", time.localtime()))  
+                time_in_str = time.strftime("%H:%M:%S", time.localtime())             
                 answer_name = input("\nWelcome visitor. Enter your name: ")
                 answer_password = input("Enter your password: ")
                 print("ID check...")
@@ -114,56 +117,65 @@ def mode_one(): # Function one to reserve room. Need to implement calendar/more 
                     max_people_in=1
 
                     print("Sisällä on ",personCount," henkilöä.")
-                    while True:
+                    while hour<end_time:
+                        hour = (time.localtime()).tm_hour
                         time.sleep(0.05)
                         if keyboard.is_pressed('y'):
                             personCount+=1
                             if personCount>max_people_in:
                                 max_people_in+=1
                             print(f"One more person entered! There are now {personCount} people inside!")
+                            time.sleep(0.1)
                             
                         if keyboard.is_pressed('x') and personCount>0:
                             personCount-=1
                             if personCount>1:
                                 print(f"A person exited! There are now {personCount} people inside!")
+                                time.sleep(0.1)
                                 
                             if personCount==1:
                                 print(f"Only one persone left!")
+                                time.sleep(0.1)
                                 
                         if keyboard.is_pressed('x') and personCount==0:
                             prRed(f"\nNo one left in the room! If you're not back within {max_time_out_of_room} seconds, your reservation will be cancelled.")                                                                                 
                             time_out=time.time()
+                            time_out_str = time.strftime("%H:%M:%S", time.localtime())
                             #test=time.strftime("%H:%M:%S", time.localtime(time_out))
-                            all_time_out.append(time.strftime("%H:%M:%S", time.localtime(time_out)))                    
+                            #all_time_out.append(time.strftime("%H:%M:%S", time.localtime(time_out)))                    
                             back = False
                             while (time.time() - time_out) < max_time_out_of_room:
                                 if keyboard.is_pressed('y'):
                                     print(f"Welcome back {name}!")
-                                    all_time_in.append(time.strftime("%H:%M:%S", time.localtime()))
+                                    #all_time_in.append(time.strftime("%H:%M:%S", time.localtime()))
                                     personCount+=1
                                     back = True
                                     break
                             if back == False:
-                                raise Cancelled
+
+                                break
                                 time.sleep(0.02)                        
-                        
+        if hour == end_time:
+            prRed("\nTimer reached. Please exit the room")
+            time_out_str = time.strftime("%H:%M:%S", time.localtime())
+            break
                     
-        except Cancelled:
+        if back == False:
             prRed(f"\nYou took too long to come back {name}! Your reservation is now cancelled.")
             early_exit=True
             break
 
 
-        if keyboard.is_pressed("e"): #exit mode alarm
-            print("\nMode ROOM booking exited successfully")
-            break
+        #if keyboard.is_pressed("e"): #exit mode alarm
+           # print("\nMode ROOM booking exited successfully")
+            #break
 
         elif print_status: # if hour is not yet reached start time
             print(f"\nNo reservation at {hour} on {day}/12. Next reservation at {start_time} on {day_user}/12")      
             print_status=False   
             break    
     
-    data_user=[name, day, start_time, end_time, max_people_in, all_time_in, all_time_out, early_exit]        
+    data_user=[(name, day, start_time, end_time, max_people_in, time_in_str, time_out_str, early_exit)]        
 
 def print_data():
     print(data_user)
