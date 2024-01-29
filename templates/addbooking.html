@@ -1,0 +1,28 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+		<title>Flask and SQLite </title> 
+	</head> 
+	<body> 
+		<form method="POST"> 
+			<label>Enter Name:</label> 
+			<input type="name" name="name" placeholder="Enter your name" required><br/> 
+			<label>Enter day:</label> 
+			<input type="date" name="day" placeholder="Enter your date" required><br/> 
+			<label>Enter start time:</label> 
+			<input type="time" name="starttime" placeholder="Enter your start time" required><br/> 
+			<label>Enter end time:</label> 
+			<input type="time" name="endtime" placeholder="Enter the end time" required><br/> 
+			<label>Enter max people:</label> 
+			<input type="number" name="maxpeople" placeholder="Enter max people mnumber" required><br/> 
+			<label>Enter time in:</label> 
+			<input type="time" name="timein" placeholder="Enter your time in" min="08:00" max="20:00" required><br/>
+			<label>Enter time out:</label> 
+			<input type="time" name="timeout" placeholder="Enter your time out" min="09:00" max="20:00" required><br/>
+			<label>Enter early exit:</label> 
+			<input type="name" name="earlyexit" placeholder="Early exit?" required><br/>                        			
+            <input type = "submit" value = "submit"/>
+			<input type="button" value="Back" onclick="history.back()"><br/>
+		</form> 
+	</body> 
+</html>
