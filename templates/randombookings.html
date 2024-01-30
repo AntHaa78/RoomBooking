@@ -1,0 +1,46 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+		<title>Flask and SQLite </title> 
+	</head> 
+	<style> 
+		table, th { 
+		border:1px solid black; 
+		} 
+		td {
+		border:1px solid black; 
+    	text-align: center; 
+    	vertical-align: middle;
+		}
+		</style> 
+	<body> 
+        <h1>List of randomly generated bookings, Flask and SQlite</h1>
+		<table style="width:100%"> 
+			<tr> 
+			<th>Name</th> 
+			<th>Day</th> 
+			<th>Start time</th> 
+			<th>End time</th> 
+			<th>Max people</th> 
+            <th>Time in</th> 
+            <th>Time out</th> 
+            <th>Early exit</th> 
+			</tr> 
+			{%for booking in data%} 
+			<tr> 
+				<td>{{booking[0]}}</td> 
+				<td>{{booking[1]}}</td> 
+				<td>{{booking[2]}}</td> 
+				<td>{{booking[3]}}</td> 
+				<td>{{booking[4]}}</td> 
+                <td>{{booking[5]}}</td> 
+                <td>{{booking[6]}}</td> 
+                <td>{{booking[7]}}</td> 
+				</tr> 
+			{%endfor%} 
+		</table>
+ 		<form>
+			<input type="button" value="Back" onclick="history.back()">
+		</form>	 
+	</body> 
+</html> 
