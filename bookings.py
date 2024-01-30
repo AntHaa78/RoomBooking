@@ -9,7 +9,8 @@ import calendar
 
 
 #Room reservation
-#to improve: better time system reservation. Remove x/y rom inputs
+#to improve:  - better manual booking online (times?, boolean value automatic)
+#             - Remove x/y from inputs in terminal
 
 
 
@@ -181,7 +182,7 @@ def get_data():
 
 def update_db():
     con = sqlite3.connect("Database.db")
-    con.execute('''CREATE TABLE IF NOT EXISTS database(
+    con.execute('''CREATE TABLE IF NOT EXISTS bookings(
             name TEXT NOT NULL,
             day DATE, 
             StartTime INTEGER, 
@@ -190,7 +191,7 @@ def update_db():
             TimesIn TEXT,
             TimesOut TEXT,
             EarlyExit BOOLEAN)''')
-    con.executemany("""INSERT INTO database 
+    con.executemany("""INSERT INTO bookings 
                     VALUES(?,?,?,?,?,?,?,?)""", data_user)
     con.commit()
     con.close()
@@ -253,12 +254,19 @@ def index():
 
 @app.route('/bookings') 
 def bookings(): 
-	connect = sqlite3.connect('Database.db') 
-	cursor = connect.cursor() 
-	cursor.execute('SELECT * FROM database') 
-
+	con = sqlite3.connect('Database.db') 
+	cursor = con.cursor() 
+	cursor.execute('SELECT * FROM bookings') 
 	data = cursor.fetchall() 
 	return render_template("bookings.html", data=data) 
+
+@app.route('/randombookings') 
+def randombookings(): 
+	con = sqlite3.connect('DatabaseRandom.db') 
+	cursor = con.cursor() 
+	cursor.execute('SELECT * FROM bookings') 
+	data = cursor.fetchall() 
+	return render_template("randombookings.html", data=data) 
 
 @app.route('/addbooking', methods=['GET', 'POST'])
 def addbooking(): 
@@ -274,17 +282,24 @@ def addbooking():
 
 		with sqlite3.connect("Database.db") as users: 
 			cursor = users.cursor() 
-			cursor.execute("INSERT INTO database VALUES(?,?,?,?,?,?,?,?)", (name, day, starttime, endtime, maxpeople, timein, timeout, earrlyexit))
+			cursor.execute("INSERT INTO bookings VALUES(?,?,?,?,?,?,?,?)", (name, day, starttime, endtime, maxpeople, timein, timeout, earrlyexit))
 			users.commit() 
 		return render_template("index.html") 
 	else: 
 		return render_template('addbooking.html') 
+     
 
 if __name__ == '__main__': 
-    prRed("x to simulate inside sensor, y to simulate outside sensor")
-    reservation()
-    update_db()
-
-    #random_bookings(20)
-
-    #app.run(debug=False) 
+    answer = input("Do you want to (type 1 2 or 3):\n1) Make a reservation\n2) Generate random bookings\n3) Check existing bookings online\n")
+    while answer!='1' and answer !='2' and answer!='3':
+        print('\nOnly 1 2 or 3 are accepted answers')
+        answer = input('\nYour answer: ')
+    if answer=='1':
+        prRed("x to simulate inside sensor, y to simulate outside sensor")
+        reservation()
+        update_db()
+    elif answer=='2':
+        rownumber = int(input("\nHow many bookings?: "))
+        random_bookings(rownumber)
+    elif answer=='3':
+        app.run(debug=False)
