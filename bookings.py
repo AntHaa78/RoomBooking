@@ -5,6 +5,7 @@ import keyboard # Used to simulate sensors (without raspberry pi)
 import threading
 import sqlite3
 from flask import Flask, render_template, request 
+import calendar
 
 
 #Room reservation
@@ -45,7 +46,8 @@ def reservation(): # Function to reserve room. Need to implement calendar/more d
 
     print("\nWelcome to the room reservation system for January")
     name=input("\nEnter your name: ")
-    day=(time.localtime())[2]    
+    day=(time.localtime())[2]  
+    day_formatted = time.strftime("%Y-%m-%d")  
     hour=(time.localtime()).tm_hour
     
     # Testings end case with minutes
@@ -59,8 +61,10 @@ def reservation(): # Function to reserve room. Need to implement calendar/more d
         start_time = int(input(f"\nEnter the start time of the reservation ({hour}-19): "))
     else:
         start_time = int(input(f"\nEnter the start time of the reservation (8-19): "))
+    start_time_str=str(start_time)+':00'
     end_time = int(input(f"\nEnter the end time of the reservation ({start_time+1}-20): "))
-    time_out_str=f'{end_time}:00:00' # if timer reaches end, this is end time out of room
+    end_time_str = str(end_time)+':00'
+    time_out_str=f'{end_time}:00' # if timer reaches end, this is end time out of room
     password = password_generator()
     if (hour>=start_time and hour<end_time and day_user==day):
         print(f"\nYour name is {name}, your password will be '{password}', your reservation starts at {start_time} and ends at {end_time}. Work hard!")
@@ -85,7 +89,7 @@ def reservation(): # Function to reserve room. Need to implement calendar/more d
                 while keyboard.is_pressed('y')==False:
                     pass
 
-                time_in_str = time.strftime("%H:%M:%S", time.localtime())             
+                time_in_str = time.strftime("%H:%M", time.localtime())             
                 answer_name = input("\nWelcome visitor. Enter your name: ")
                 answer_password = input("Enter your password: ")
                 print("ID check...")
@@ -137,7 +141,7 @@ def reservation(): # Function to reserve room. Need to implement calendar/more d
                         if keyboard.is_pressed('x') and personCount==0:
                             prRed(f"\nNo one left in the room! If you're not back within {max_time_out_of_room} seconds, your reservation will be cancelled.")                                                                                 
                             time_out=time.time()
-                            time_out_str = time.strftime("%H:%M:%S", time.localtime())                    
+                            time_out_str = time.strftime("%H:%M", time.localtime())                    
                             back = False
                             while (time.time() - time_out) < max_time_out_of_room:
                                 if keyboard.is_pressed('y'):
@@ -166,7 +170,7 @@ def reservation(): # Function to reserve room. Need to implement calendar/more d
 
     #t.cancel() cancel timer on testings
             
-    data_user=[(name, day, start_time, end_time, max_people_in, time_in_str, time_out_str, early_exit)]        
+    data_user=[(name, day_formatted, start_time_str, end_time_str, max_people_in, time_in_str, time_out_str, early_exit)]        
 
 def print_data():
     print(data_user)
@@ -179,14 +183,64 @@ def update_db():
     con = sqlite3.connect("Database.db")
     con.execute('''CREATE TABLE IF NOT EXISTS database(
             name TEXT NOT NULL,
-            day INTEGER, 
+            day DATE, 
             StartTime INTEGER, 
             EndTime INTEGER, 
             MaxPeople INTEGER, 
             TimesIn TEXT,
             TimesOut TEXT,
             EarlyExit BOOLEAN)''')
-    con.executemany("INSERT INTO database VALUES(?,?,?,?,?,?,?,?)", data_user)
+    con.executemany("""INSERT INTO database 
+                    VALUES(?,?,?,?,?,?,?,?)""", data_user)
+    con.commit()
+    con.close()
+
+# random booking generator
+def random_booking():
+    day = random.choice([date for date in calendar.Calendar().itermonthdates(2024, 1) if date.month == 1])
+    starttime = random.randint(8,19)
+    starttime_str = str(starttime)+':00'
+    endtime = random.randint(1+starttime,20)
+    endtime_str = str(endtime)+':00'
+    maxpeople = random.randint(1,10)
+    hour_in = starttime
+    minute_in = random.randint(0,59)
+    if minute_in<10:
+        timein = f'{hour_in}:0{minute_in}'
+    else:
+        timein = f'{hour_in}:{minute_in}'
+    time_out_minutes = random.randint(hour_in*60+minute_in, endtime*60)
+    hour_out, minute_out = divmod(time_out_minutes, 60)
+    if minute_out<10:
+        timeout = f'{hour_out}:0{minute_out}'
+    else:
+        timeout = f'{hour_out}:{minute_out}'   
+    if timeout==endtime_str:
+        earlyexit=False
+    else:
+       earlyexit=True
+    data = (str(day), starttime_str, endtime_str, maxpeople, timein, timeout, earlyexit)
+    return data
+
+# create random SQL rownumber-table of datas
+def random_bookings(rownumber):
+    datas=[]  
+    for i in range(1,rownumber+1):
+        name = ('test'+str(i),)
+        data = random_booking()
+        datas.append((name+data))
+    con = sqlite3.connect('DatabaseRandom.db') 
+    con.execute('DROP TABLE bookings')
+    con.execute('''CREATE TABLE bookings(
+            name TEXT NOT NULL,
+            day DATE, 
+            StartTime TEXT, 
+            EndTime TEXT, 
+            MaxPeople INTEGER, 
+            TimesIn TEXT,
+            TimesOut TEXT,
+            EarlyExit BOOLEAN)''')   
+    con.executemany('INSERT INTO bookings (name, day, StartTime, EndTime, MaxPeople, TimesIn, TimesOut, EarlyExit) VALUES (?,?,?,?,?,?,?,?)', datas)
     con.commit()
     con.close()
 
@@ -230,4 +284,7 @@ if __name__ == '__main__':
     prRed("x to simulate inside sensor, y to simulate outside sensor")
     reservation()
     update_db()
-    app.run(debug=False) 
+
+    #random_bookings(20)
+
+    #app.run(debug=False) 
