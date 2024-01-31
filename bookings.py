@@ -230,20 +230,49 @@ def random_bookings(rownumber):
         name = ('test'+str(i),)
         data = random_booking()
         datas.append((name+data))
+
+    # Have day as first column
+    datas_list = [list(ele) for ele in datas]
+    for i in range(0,len(datas_list)):
+        datas_list[i][0],datas_list[i][1]=datas_list[i][1],datas_list[i][0]
+    datas_list = sorted(datas_list)   
+    datas = [tuple(ele) for ele in datas_list]
+
     con = sqlite3.connect('DatabaseRandom.db') 
     con.execute('DROP TABLE bookings')
     con.execute('''CREATE TABLE bookings(
-            name TEXT NOT NULL,
-            day DATE, 
+            day DATE,                
+            name TEXT NOT NULL,                
             StartTime TEXT, 
             EndTime TEXT, 
             MaxPeople INTEGER, 
             TimesIn TEXT,
             TimesOut TEXT,
             EarlyExit BOOLEAN)''')   
-    con.executemany('INSERT INTO bookings (name, day, StartTime, EndTime, MaxPeople, TimesIn, TimesOut, EarlyExit) VALUES (?,?,?,?,?,?,?,?)', datas)
+    con.executemany('INSERT INTO bookings (day, name, StartTime, EndTime, MaxPeople, TimesIn, TimesOut, EarlyExit) VALUES (?,?,?,?,?,?,?,?)', datas)
     con.commit()
-    con.close()
+    con.close() 
+
+# create random infos for test people and create database
+def random_infos(rownumber):
+    emails_ending = ['gmail.com', 'hotmail.com', 'yahoo.com','outlook.com']
+    datas = []
+    for i in range(1,rownumber+1):
+        name = 'test'+str(i)
+        email = name+'@'+ random.choice(emails_ending)
+        phone = '04'+''.join(random.choice(string.digits) for j in range(8))
+        datas.append((name, email, phone))
+
+    con = sqlite3.connect('DatabaseRandom.db') 
+    #con.execute('DROP TABLE infos')
+    con.execute('''CREATE TABLE infos(            
+            name TEXT NOT NULL,                
+            email TEXT, 
+            phone TEXT)''')   
+    con.executemany('INSERT INTO infos (name,email, phone) VALUES (?,?,?)', datas)
+    con.commit()
+    con.close()   
+  
 
 app = Flask(__name__) 
 
