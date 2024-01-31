@@ -297,6 +297,14 @@ def randombookings():
 	data = cursor.fetchall() 
 	return render_template("randombookings.html", data=data) 
 
+@app.route('/randominfos') 
+def randominfos(): 
+	con = sqlite3.connect('DatabaseRandom.db') 
+	cursor = con.cursor() 
+	cursor.execute('SELECT * FROM infos') 
+	data = cursor.fetchall() 
+	return render_template("randominfos.html", data=data) 
+
 @app.route('/addbooking', methods=['GET', 'POST'])
 def addbooking(): 
 	if request.method == 'POST': 
